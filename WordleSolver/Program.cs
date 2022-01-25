@@ -25,12 +25,16 @@ List<Char> greyCharacters = new List<Char>();
 
 Console.WriteLine("wordle solver");
 Console.WriteLine($"Mark matching g:green, y:yellow, b:black");
-Console.WriteLine($"Press s to skip this word and suggest a new one");
+Console.WriteLine($"s:skip this suggestion");
 
 for (int j = 0; j < 10; j++)
 {
     //suggest word to try
     Word picked = PickNextWord();
+
+    //Todo remove this hardcoded stuff!
+    if (j==0) { picked.Value = "aggie"; }
+
     Console.WriteLine($"Suggestion: {picked.Value}");
     bool skipThisWord = false;
 
@@ -63,7 +67,7 @@ for (int j = 0; j < 10; j++)
                 greyCharacters.Add(picked.Value[i]);
                 break;
             case 's': //skip
-                currentTop --;
+                currentTop--;
                 skipThisWord = true;
                 unkown.Add(picked.Value);
                 break;
@@ -83,30 +87,15 @@ for (int j = 0; j < 10; j++)
 
 
 
-
-
-
-
-//todo allow blacklist if word is not in dictionary of wordle:
-
-
-//1. rate the words
-//2. pick one
-//3. mark letters
-//green: The letter is in the word and in the correct spot.
-//yellow: The letter is in the word but in the wrong spot.
-//black: The letter U is not in the word in any spot.
-//https://www.geeksforgeeks.org/c-sharp-how-to-change-background-color-of-text-in-console/
-
-
-
 List<Word> ReduceList()
 {
     //remove skipped words from wordlist
     words = words.Where(e => !unkown.Contains(e.Value)).ToList();
 
     //remove blacklisted characters
-    List<Word> wordsWithoutBlacklisted = words.Where(w => !w.Value.Any(c => greyCharacters.Contains(c))).ToList();
+    //Create a list with characters that are blacklisted, and are not on the yellow or green list
+    List<Char> forbiddenCharacters = greyCharacters.Where(g => !yellowCharacters.Any(y => y.Key == g) && !greenCharacters.Any(y => y.Key == g)).ToList();
+    List<Word> wordsWithoutBlacklisted = words.Where(w => !w.Value.Any(c => forbiddenCharacters.Contains(c))).ToList();
 
     //Ensure green characters are on the right spot
     List<Word> matchingGreenCharacters = new List<Word>();
