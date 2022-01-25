@@ -8,13 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WordleLibrary\WordleLibrary.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="unknownWords.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="words_alpha.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
