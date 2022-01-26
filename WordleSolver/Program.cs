@@ -31,14 +31,9 @@ for (int j = 0; j < 10; j++)
             case 'y':
                 Console.BackgroundColor = ConsoleColor.Yellow;
                 Console.Write(picked.Value[i]);
-                solver.YellowCharacters[picked.Value[i]] = i;
+                solver.YellowCharacters[i].Add(picked.Value[i]);
                 break;
             case 'b':
-                Console.BackgroundColor = ConsoleColor.Gray;
-                Console.Write(picked.Value[i]);
-                solver.GreyCharacters.Add(picked.Value[i]);
-                break;
-                //write word to 'unknownWords.txt'
                 Console.BackgroundColor = ConsoleColor.Gray;
                 Console.Write(picked.Value[i]);
                 solver.GreyCharacters.Add(picked.Value[i]);

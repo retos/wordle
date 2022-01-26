@@ -6,7 +6,9 @@ public class Solver
     public string NameOfBaseWordlist { get; set; }
     public List<Word> Dictionary { get; set; }
     public Dictionary<Char, int> GreenCharacters { get; set; }
-    public Dictionary<Char, int> YellowCharacters { get; set; }
+    public Dictionary<int, List<Char>> YellowCharacters { get; set; }
+    public Dictionary<char, int> LetterCount { get; set; }
+    public Dictionary<char, int> LetterCountMin { get; set; }
     public List<Char> GreyCharacters { get; set; }
     public Solver()
     {
@@ -20,17 +22,36 @@ public class Solver
         GreenCharacters = new();
         YellowCharacters = new();
         GreyCharacters = new List<Char>();
+        LetterCount = new();
+        LetterCountMin = new();
     }
     List<Word> ReduceList()
     {
+        //TODO: if two places mark same letter start counting them!!!
+
         //remove blacklisted characters
         //Create a list with characters that are blacklisted, and are not on the yellow or green list
         List<Char> forbiddenCharacters = GreyCharacters.Where(g => !YellowCharacters.Any(y => y.Key == g) && !GreenCharacters.Any(y => y.Key == g)).ToList();
         List<Word> wordsWithoutBlacklisted = Dictionary.Where(w => !w.Value.Any(c => forbiddenCharacters.Contains(c))).ToList();
 
+        //ensure known char-count is correct
+        List<Word> wordsWithWrongLetterCount = new();
+        foreach (var dict in LetterCount)
+        {
+            wordsWithWrongLetterCount = wordsWithoutBlacklisted.Where(w => w.Value.Count(c => c == dict.Key) != dict.Value).ToList();
+        }
+        List<Word> wordsWithCorrectLettercount = wordsWithoutBlacklisted.Except(wordsWithWrongLetterCount).ToList();
+        //ensure known min char-count is correct
+        wordsWithWrongLetterCount = new();
+        foreach (var dict in LetterCountMin)
+        {
+            wordsWithWrongLetterCount = wordsWithoutBlacklisted.Where(w => w.Value.Count(c => c == dict.Key) < dict.Value).ToList();
+        }
+        wordsWithCorrectLettercount = wordsWithCorrectLettercount.Except(wordsWithWrongLetterCount).ToList();
+
         //Ensure green characters are on the right spot
         List<Word> matchingGreenCharacters = new List<Word>();
-        foreach (Word word in wordsWithoutBlacklisted)
+        foreach (Word word in wordsWithCorrectLettercount)
         {
             bool isMatch = true;
             foreach (var dict in GreenCharacters)
@@ -57,47 +78,110 @@ public class Solver
         {
             List<int> usedSpots = new List<int>();
             bool isMatch = true;
+            
             foreach (var dict in YellowCharacters)
             {
-                if (!word.Value.Contains(dict.Key))
+                foreach (char y in dict.Value)
                 {
-                    isMatch = false;//yellowCharacter was not in word
-                }
-                else if (word.Value[dict.Value] == dict.Key)
-                {
-                    isMatch = false;//yellowCharacter was on forbidden spot
-                }
-                else
-                {
-                    bool fulfillsCharacter = false;
-                    for (int k = 0; k < LengthOfWords; k++)
+                    if (word.Value[dict.Key] == y)
                     {
-                        if (!usedSpots.Contains(k) && word.Value[k] == dict.Key) //spot unused so far && spot matches yellow letter
-                        {
-                            usedSpots.Add(k);//mark spot as used
-                            fulfillsCharacter = true;
-                            break;
-                        }
+                        //Console.WriteLine($" - dropping word {word.Value} because char '{y}' was found on pos {dict.Key}");
+                        isMatch = false;//forbidden char on position found -> no match
+                        break;
                     }
-                    if (!fulfillsCharacter)
+                }
+                if (!isMatch) { break; }
+
+                List<char> allYellowLetters = YellowCharacters.SelectMany(y => y.Value).Distinct().ToList();
+                string currentWord = word.Value;
+                foreach (char y in allYellowLetters)
+                {
+                    int index = currentWord.IndexOf(y);
+                    if (index >= 0)
                     {
-                        isMatch = false;
+                        //mark spot as used
+                        currentWord = currentWord.Remove(index, 1).Insert(index, "_");
+                    }
+                    else
+                    {
+                        //Console.WriteLine($" - dropping word {word.Value} because char '{y}' was not found");
+                        isMatch = false;//unused yellow char found -> no match
+                        break;
                     }
                 }
 
-                if (!isMatch)
-                {
-                    break;
-                }
+                if (!isMatch) { break; }
             }
             if (isMatch)
             {
                 containYellowCharacters.Add(word);
             }
         }
+
+        List<Word> droppedWords = Dictionary.Except(containYellowCharacters).ToList();
+
         return containYellowCharacters;
     }
 
+    public void SetMatching(Word pickedWord, string matchInfo)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            //check if current letter is among the green or yellow ones -> Would mean we know the number
+            int currentLetterCount = pickedWord.Value.Count(c => c == pickedWord.Value[i]);
+            Char currentChar = pickedWord.Value[i];
+            if (currentLetterCount > 1)
+            {
+                //Find occurences of current char
+                List<int> foundIndexes = new List<int>();
+                string markingsOfCurrentChar = string.Empty;
+                for (int j = pickedWord.Value.IndexOf(currentChar); j > -1; j = pickedWord.Value.IndexOf(currentChar, j + 1))
+                {
+                    // for loop end when j=-1 (char not found)
+                    foundIndexes.Add(j);
+                    markingsOfCurrentChar += matchInfo[j];
+                }
+                if (markingsOfCurrentChar.Contains('b'))
+                {
+                    //since there is a grey match, we know the max number
+                    //number of occurences, but only count green and yellow markings:
+                    LetterCount[currentChar] = markingsOfCurrentChar.Count(c => c == 'g' || c == 'y');
+                }
+                else
+                {
+                    LetterCountMin[currentChar] = markingsOfCurrentChar.Count();
+                }
+            }
+
+            switch (matchInfo[i])
+            {
+                case 'g':
+                    GreenCharacters[pickedWord.Value[i]] = i;
+                    break;
+                case 'y':
+                    if (!YellowCharacters.ContainsKey(i))
+                    {
+                        YellowCharacters[i] = new List<char>();
+                    }
+                    if (!YellowCharacters[i].Contains(pickedWord.Value[i]))
+                    {//not in there yet -> add
+                        YellowCharacters[i].Add(pickedWord.Value[i]);
+                    }
+                    break;
+                case 'b':
+                    if (!LetterCount.ContainsKey(pickedWord.Value[i]))//current letter occures -> ignore this gray match for now
+                    {
+                        if (!GreyCharacters.Contains(pickedWord.Value[i]))//is already in list, do not add again
+                        {//new -> add
+                            GreyCharacters.Add(pickedWord.Value[i]);
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 
     public Word PickNextWord()
     {
@@ -111,7 +195,7 @@ public class Solver
             return Dictionary.Skip(0).First();
         }
     }
-    List<string> ReadInput(string filename)
+    public static List<string> ReadInput(string filename)
     {
         StreamReader reader = new StreamReader(filename);
 
