@@ -1,6 +1,5 @@
 ﻿Console.WriteLine("wordle solver - use this app to solve the online game wordle");
 Console.WriteLine($"Mark matching g:green, y:yellow, b:black");
-Console.WriteLine($"s:skip this suggestion");
 Solver solver = new Solver();
 
 for (int j = 0; j < 10; j++)
@@ -38,11 +37,6 @@ for (int j = 0; j < 10; j++)
                 Console.BackgroundColor = ConsoleColor.Gray;
                 Console.Write(picked.Value[i]);
                 solver.GreyCharacters.Add(picked.Value[i]);
-                break;
-            case 's': //skip
-                currentTop--;
-                skipThisWord = true;
-                solver.WordsToIgnore.Add(picked.Value);
                 break;
                 //write word to 'unknownWords.txt'
                 Console.BackgroundColor = ConsoleColor.Gray;

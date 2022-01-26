@@ -3,9 +3,8 @@ using System.Text;
 
 Console.WriteLine("Generates puzzles!");
 
-string nameOfBaseWordlist = "words_alpha.txt";
+string nameOfBaseWordlist = "words.txt";
 List<string> list = ReadInput(nameOfBaseWordlist);
-list = list.Where(e => e.Count() == 5).ToList();
 
 for (int i = 0; i < 5; i++)
 {

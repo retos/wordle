@@ -4,23 +4,17 @@ public class Solver
 {
     public int LengthOfWords { get; set; }
     public string NameOfBaseWordlist { get; set; }
-    public string NameOfUnknownWordslist { get; set; }
     public List<Word> Dictionary { get; set; }
-    public List<string> WordsToIgnore { get; set; }
     public Dictionary<Char, int> GreenCharacters { get; set; }
     public Dictionary<Char, int> YellowCharacters { get; set; }
     public List<Char> GreyCharacters { get; set; }
     public Solver()
     {
-        NameOfBaseWordlist = "words_alpha.txt";
-        NameOfUnknownWordslist = "unknownWords.txt";
+        NameOfBaseWordlist = "words.txt";
         LengthOfWords = 5;
 
         //read words from textfiles
         List<string> list = ReadInput(NameOfBaseWordlist);
-        WordsToIgnore = ReadInput(NameOfUnknownWordslist);
-        //only use the words with the desired length
-        list = list.Where(e => e.Count() == LengthOfWords).ToList();
 
         Dictionary = Word.Convert(list);
         GreenCharacters = new();
@@ -29,9 +23,6 @@ public class Solver
     }
     List<Word> ReduceList()
     {
-        //remove skipped words from wordlist
-        Dictionary = Dictionary.Where(e => !WordsToIgnore.Contains(e.Value)).ToList();
-
         //remove blacklisted characters
         //Create a list with characters that are blacklisted, and are not on the yellow or green list
         List<Char> forbiddenCharacters = GreyCharacters.Where(g => !YellowCharacters.Any(y => y.Key == g) && !GreenCharacters.Any(y => y.Key == g)).ToList();
