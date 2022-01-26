@@ -15,7 +15,7 @@ string maxGuessWord = string.Empty;
 foreach (string entry in puzzleInput)
 {
     int guessCounter = 0;
-    //Console.WriteLine($"Starting game for {entry}");
+    Console.WriteLine($"Starting game for {entry}");
     Game game = new Game(entry);
     Solver solver = new Solver();
     string matchInfo = string.Empty;
