@@ -4,4 +4,4 @@ If you can read this, that is not good. This code was never intendet to share wi
 
 The App 'Wordle Solver' helps you to solve the online game [Wordle](https://www.powerlanguage.co.uk/wordle/)
 
-It uses a word library from [here](https://github.com/dwyl/english-words)
+It uses a word library from wordle.
