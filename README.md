@@ -6,7 +6,7 @@ The App 'Wordle Solver' helps you to solve the online game [Wordle](https://www.
 
 It uses a word library from wordle.
 
-[AutomaticWordleSolver](/tree/main/AutomaticWordleSolver) has still room for improvement current status:
+[AutomaticWordleSolver](/AutomaticWordleSolver) has still room for improvement current status:
 ```
 Automatic Wordle-Solver!
 All done. Guesscount 9105, games played 2315, average 3
