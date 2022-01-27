@@ -8,7 +8,7 @@ It uses a word library from wordle.
 ```
 Automatic Wordle-Solver!
 All done. Guesscount 9105, games played 2315, average 3.93
-worst word is eater with 9 ties
+worst word is eater with 9 tries
 ```
 This app goes to a randomized list of all words from wordle and solves them.
 
