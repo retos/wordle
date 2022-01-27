@@ -1,5 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-using System.Text;
+﻿using System.Text;
 using WordleLibrary;
 
 Console.WriteLine("Generates puzzles!");
@@ -17,8 +16,7 @@ for (int i = 0; i < 5; i++)
 Console.WriteLine("Programm ended - Puzzles are in bin/Debug folder.");
 
 void WriteToDisk(List<string> newList, string filename)
-{
-    
+{    
     StringBuilder stringBuilder = new StringBuilder();
     string output = string.Join(Environment.NewLine, newList);
     File.WriteAllText(filename, output);

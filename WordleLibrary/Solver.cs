@@ -1,4 +1,5 @@
 ﻿namespace WordleLibrary;
+//TODO: //https://en.wikipedia.org/wiki/Letter_frequency#:~:text=top%20eight%20characters.-,Relative%20frequencies%20of%20letters%20in%20the%20English%20language,%2C%20Q%2C%20X%2C%20Z.
 
 public class Solver
 {
@@ -27,21 +28,19 @@ public class Solver
     }
     List<Word> ReduceList()
     {
-        //TODO: if two places mark same letter start counting them!!!
-
-        //remove blacklisted characters
+        //1. remove blacklisted characters
         //Create a list with characters that are blacklisted, and are not on the yellow or green list
         List<Char> forbiddenCharacters = GreyCharacters.Where(g => !YellowCharacters.Any(y => y.Key == g) && !GreenCharacters.Any(y => y.Key == g)).ToList();
         List<Word> wordsWithoutBlacklisted = Dictionary.Where(w => !w.Value.Any(c => forbiddenCharacters.Contains(c))).ToList();
 
-        //ensure known char-count is correct
+        //2. ensure known char-count is correct
         List<Word> wordsWithWrongLetterCount = new();
         foreach (var dict in LetterCount)
         {
             wordsWithWrongLetterCount = wordsWithoutBlacklisted.Where(w => w.Value.Count(c => c == dict.Key) != dict.Value).ToList();
         }
         List<Word> wordsWithCorrectLettercount = wordsWithoutBlacklisted.Except(wordsWithWrongLetterCount).ToList();
-        //ensure known min char-count is correct
+        //3. ensure known min char-count is correct
         wordsWithWrongLetterCount = new();
         foreach (var dict in LetterCountMin)
         {
@@ -49,7 +48,7 @@ public class Solver
         }
         wordsWithCorrectLettercount = wordsWithCorrectLettercount.Except(wordsWithWrongLetterCount).ToList();
 
-        //Ensure green characters are on the right spot
+        //4. Ensure green characters are on the right spot
         List<Word> matchingGreenCharacters = new List<Word>();
         foreach (Word word in wordsWithCorrectLettercount)
         {
@@ -71,7 +70,7 @@ public class Solver
             }
         }
 
-        //ensure yellow are included, but not on the wrong spot & one spot can only be used once!
+        //5. ensure yellow are included, but not on the wrong spot & one spot can only be used once!
         List<Word> containYellowCharacters = new List<Word>();
 
         foreach (Word word in matchingGreenCharacters)
@@ -127,10 +126,10 @@ public class Solver
     {
         for (int i = 0; i < 5; i++)
         {
-            //check if current letter is among the green or yellow ones -> Would mean we know the number
+            //1. check if current letter is among the green or yellow ones -> Would mean we might know the number occurences
             int currentLetterCount = pickedWord.Value.Count(c => c == pickedWord.Value[i]);
             Char currentChar = pickedWord.Value[i];
-            if (currentLetterCount > 1)
+            if (currentLetterCount > 1) //we only track occurences higher than 1
             {
                 //Find occurences of current char
                 List<int> foundIndexes = new List<int>();
@@ -143,16 +142,18 @@ public class Solver
                 }
                 if (markingsOfCurrentChar.Contains('b'))
                 {
-                    //since there is a grey match, we know the max number
+                    //since there is a grey match, we know the max number of occurences
                     //number of occurences, but only count green and yellow markings:
                     LetterCount[currentChar] = markingsOfCurrentChar.Count(c => c == 'g' || c == 'y');
                 }
                 else
                 {
+                    //since there are no grey matches, we know the min number of occurences
                     LetterCountMin[currentChar] = markingsOfCurrentChar.Count();
                 }
             }
 
+            //2. translate match info to the internal lists for g,y and b
             switch (matchInfo[i])
             {
                 case 'g':
@@ -188,6 +189,7 @@ public class Solver
         Dictionary = ReduceList();
         if (Dictionary.Where(w => w.LengthWithoutDuplicates == LengthOfWords).ToList().Count > 0)
         {
+            //as long as possible pick a word without double occurences of letters. To eliminate letters faster
             return Dictionary.Where(w => w.LengthWithoutDuplicates == LengthOfWords).Skip(0).First();
         }
         else
