@@ -1,5 +1,4 @@
 ﻿namespace WordleLibrary;
-//TODO: //https://en.wikipedia.org/wiki/Letter_frequency#:~:text=top%20eight%20characters.-,Relative%20frequencies%20of%20letters%20in%20the%20English%20language,%2C%20Q%2C%20X%2C%20Z.
 
 public class Solver
 {
@@ -18,14 +17,16 @@ public class Solver
 
         //read words from textfiles
         List<string> list = ReadInput(NameOfBaseWordlist);
-
         Dictionary = Word.Convert(list);
+        //Guessing that the dictionary is based on english letters, therefore testing letter with higher relative frequency first
+        Dictionary = Dictionary.OrderByDescending(w => w.Wordrating).ToList();
         GreenCharacters = new();
         YellowCharacters = new();
         GreyCharacters = new List<Char>();
         LetterCount = new();
         LetterCountMin = new();
     }
+
     List<Word> ReduceList()
     {
         //1. remove blacklisted characters
@@ -37,16 +38,14 @@ public class Solver
         List<Word> wordsWithWrongLetterCount = new();
         foreach (var dict in LetterCount)
         {
-            wordsWithWrongLetterCount = wordsWithoutBlacklisted.Where(w => w.Value.Count(c => c == dict.Key) != dict.Value).ToList();
+            wordsWithWrongLetterCount.AddRange(wordsWithoutBlacklisted.Where(w => w.Value.Count(c => c == dict.Key) != dict.Value).ToList());
         }
-        List<Word> wordsWithCorrectLettercount = wordsWithoutBlacklisted.Except(wordsWithWrongLetterCount).ToList();
         //3. ensure known min char-count is correct
-        wordsWithWrongLetterCount = new();
         foreach (var dict in LetterCountMin)
         {
-            wordsWithWrongLetterCount = wordsWithoutBlacklisted.Where(w => w.Value.Count(c => c == dict.Key) < dict.Value).ToList();
+            wordsWithWrongLetterCount.AddRange(wordsWithoutBlacklisted.Where(w => w.Value.Count(c => c == dict.Key) < dict.Value).ToList());
         }
-        wordsWithCorrectLettercount = wordsWithCorrectLettercount.Except(wordsWithWrongLetterCount).ToList();
+        List<Word> wordsWithCorrectLettercount = wordsWithoutBlacklisted.Except(wordsWithWrongLetterCount).ToList();
 
         //4. Ensure green characters are on the right spot
         List<Word> matchingGreenCharacters = new List<Word>();
@@ -140,13 +139,13 @@ public class Solver
                     foundIndexes.Add(j);
                     markingsOfCurrentChar += matchInfo[j];
                 }
-                if (markingsOfCurrentChar.Contains('b'))
+                if (markingsOfCurrentChar.Contains('b') && (markingsOfCurrentChar.Contains('g')|| markingsOfCurrentChar.Contains('y')))
                 {
                     //since there is a grey match, we know the max number of occurences
                     //number of occurences, but only count green and yellow markings:
                     LetterCount[currentChar] = markingsOfCurrentChar.Count(c => c == 'g' || c == 'y');
                 }
-                else
+                else if(!markingsOfCurrentChar.Contains('b'))
                 {
                     //since there are no grey matches, we know the min number of occurences
                     LetterCountMin[currentChar] = markingsOfCurrentChar.Count();
