@@ -31,12 +31,22 @@ for (int j = 0; j < 10; j++)
             case 'y':
                 Console.BackgroundColor = ConsoleColor.Yellow;
                 Console.Write(picked.Value[i]);
+                if (!solver.YellowCharacters.ContainsKey(i))
+                {
+                    solver.YellowCharacters[i] = new List<char>();
+                }
                 solver.YellowCharacters[i].Add(picked.Value[i]);
                 break;
             case 'b':
                 Console.BackgroundColor = ConsoleColor.Gray;
                 Console.Write(picked.Value[i]);
-                solver.GreyCharacters.Add(picked.Value[i]);
+                if (!solver.LetterCount.ContainsKey(picked.Value[i]))//current letter occures -> ignore this gray match for now
+                {
+                    if (!solver.GreyCharacters.Contains(picked.Value[i]))//is already in list, do not add again
+                    {//new -> add
+                        solver.GreyCharacters.Add(picked.Value[i]);
+                    }
+                }
                 break;
             default:
                 break;
