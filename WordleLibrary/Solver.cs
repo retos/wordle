@@ -19,12 +19,35 @@ public class Solver
         List<string> list = ReadInput(NameOfBaseWordlist);
         Dictionary = Word.Convert(list);
         //Guessing that the dictionary is based on english letters, therefore testing letter with higher relative frequency first
-        Dictionary = Dictionary.OrderByDescending(w => w.Wordrating).ToList();
+        Dictionary<char, int> letterfrequency = GetLetterFrequency();
+        Dictionary = Dictionary.OrderByDescending(w => w.Wordrating(letterfrequency)).ToList();
         GreenCharacters = new();
         YellowCharacters = new();
         GreyCharacters = new List<Char>();
         LetterCount = new();
         LetterCountMin = new();
+    }
+
+    private Dictionary<char, int> GetLetterFrequency()
+    {
+        Dictionary<char, int> letterfrequency = new Dictionary<char, int>();
+
+        foreach (Word word in Dictionary)
+        {
+            foreach (Char c in word.Value)
+            {
+                if (!letterfrequency.ContainsKey(c))
+                {
+                    letterfrequency.Add(c, 1);
+                }
+                else
+                {
+                    letterfrequency[c]++;
+                }
+
+            }
+        }
+        return letterfrequency;
     }
 
     List<Word> ReduceList()
